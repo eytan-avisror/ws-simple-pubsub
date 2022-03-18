@@ -1,4 +1,4 @@
-module ws-simple-pubsub
+module github.com/eytan-avisror/ws-simple-pubsub
 
 go 1.17
 
