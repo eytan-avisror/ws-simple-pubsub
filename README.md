@@ -25,7 +25,7 @@ From a websocket client, connect to the websocket endpoint at `/ws` and submit t
 
 ### Subscribe to topic
 
-Will subscribe to an existing topic, if the topic does not exist, it will create it and add client as a subcscriber.
+`Subscribe` operation will subscribe to an existing topic, if the topic does not exist, it will be created and the client will be added as a subcscriber.
 
 ```json
 {
@@ -36,7 +36,7 @@ Will subscribe to an existing topic, if the topic does not exist, it will create
 
 ### Unsubscribe from topic
 
-Will unsubscribe a client from a given topic.
+`Unsubscribe` operation will unsubscribe a client from a given topic.
 
 ```json
 {
@@ -47,7 +47,7 @@ Will unsubscribe a client from a given topic.
 
 ### Publish to topic
 
-Will publish a message to a topic, if topic does not exist it will be created but client will not be added as subscriber.
+`Publish` operation will publish a message to a topic, if topic does not exist, it will be created and the client will not be added as subscriber.
 
 ```json
 {
@@ -59,7 +59,7 @@ Will publish a message to a topic, if topic does not exist it will be created bu
 
 ### Other operations
 
-In order to remove self from all topics, you can call the remove operation.
+`Remove` operation will remove client from all topics.
 
 ```json
 {
@@ -67,7 +67,7 @@ In order to remove self from all topics, you can call the remove operation.
 }
 ```
 
-In order to list existing topics, you can call the list operation.
+`List` operation will list all available topics.
 
 ```json
 {
