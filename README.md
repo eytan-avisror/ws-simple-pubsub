@@ -18,6 +18,7 @@ Usage of ./bin/ws-simple-pubsub:
     	the port to bind the server to (default "8080")
 
 $ ./bin/ws-simple-pubsub
+INFO[0000] registering websocket handler '/ws'
 INFO[0000] starting server on localhost:8080
 ```
 

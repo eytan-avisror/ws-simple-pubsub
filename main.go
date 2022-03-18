@@ -23,7 +23,9 @@ func main() {
 
 	ep := fmt.Sprintf("%v:%v", serverEndpoint, serverPort)
 
+	log.Info("registering websocket handler '/ws'")
 	http.HandleFunc("/ws", pubsub.WSHandler)
+
 	log.Infof("starting server on %v", ep)
 	err := http.ListenAndServe(ep, nil)
 	if err != nil {
