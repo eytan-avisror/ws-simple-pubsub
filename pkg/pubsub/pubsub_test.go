@@ -87,6 +87,40 @@ func TestUnsubscribe(t *testing.T) {
 	<-s.Done
 }
 
+func TestListTopics(t *testing.T) {
+	var (
+		s = &echoServer{}
+		d = wstest.NewDialer(s)
+	)
+
+	gomega.RegisterTestingT(t)
+
+	c, _, err := d.Dial("ws://example.org/ws", nil)
+	if err != nil {
+		panic(err)
+	}
+	defer c.Close()
+
+	_, p, err := c.ReadMessage()
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(string(p)).To(gomega.ContainSubstring("server: new client"))
+
+	c.WriteMessage(1, []byte("{\"op\": \"subscribe\", \"topic\": \"unit-testing\"}"))
+	c.WriteMessage(1, []byte("{\"op\": \"subscribe\", \"topic\": \"unit-testing-2\"}"))
+	c.WriteMessage(1, []byte("{\"op\": \"list\"}"))
+
+	_, p, err = c.ReadMessage()
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(string(p)).To(gomega.Equal("{\"unit-testing\":1,\"unit-testing-2\":1}"))
+
+	err = c.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	<-s.Done
+}
+
 type echoServer struct {
 	Done chan struct{}
 }
