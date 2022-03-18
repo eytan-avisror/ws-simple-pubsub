@@ -1,3 +1,4 @@
+.PHONY: test build
 
 COMMIT=`git rev-parse HEAD`
 BUILD=`date +%FT%T%z`
