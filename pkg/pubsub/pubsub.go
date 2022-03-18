@@ -42,7 +42,7 @@ func WSHandler(w http.ResponseWriter, r *http.Request) {
 	// generate unique ID for client
 	clientID := uuid.Must(uuid.NewRandom()).String()
 	message := fmt.Sprintf("server: new client %v", clientID)
-	server.SendMessage(conn, message, 1)
+	sendMessage(conn, message, 1)
 
 	// message handling
 	for {
@@ -58,7 +58,6 @@ func WSHandler(w http.ResponseWriter, r *http.Request) {
 
 type Server interface {
 	PublishMessage(topic string, message []byte, msgType int)
-	SendMessage(c *websocket.Conn, message string, msgType int)
 	RemoveClient(clientID string)
 	Unsubscribe(clientID, topic string)
 	ListTopics(conn *websocket.Conn)
@@ -103,7 +102,7 @@ type Message struct {
 func (s *PubSubServer) ProcessMessage(clientID string, conn *websocket.Conn, msgType int, payload []byte) {
 	m := Message{}
 	if err := json.Unmarshal(payload, &m); err != nil {
-		s.SendMessage(conn, "server: failed to unmarshal payload", 1)
+		sendMessage(conn, "server: failed to unmarshal payload", 1)
 	}
 
 	switch strings.ToLower(m.Operation) {
@@ -119,7 +118,7 @@ func (s *PubSubServer) ProcessMessage(clientID string, conn *websocket.Conn, msg
 		s.ListTopics(conn)
 	default:
 		err := fmt.Sprintf("server: unknown operation '%v'", m.Operation)
-		s.SendMessage(conn, err, 1)
+		sendMessage(conn, err, 1)
 	}
 }
 
@@ -127,14 +126,11 @@ func (s *PubSubServer) GetSubscriptions() SubscriptionList {
 	return s.Subscriptions
 }
 
-func (s *PubSubServer) SendMessage(c *websocket.Conn, message string, msgType int) {
-	c.WriteMessage(msgType, []byte(message))
-}
-
 // ListTopics returns all available topics
 func (s *PubSubServer) ListTopics(conn *websocket.Conn) {
 	var (
 		subscriptions = s.GetSubscriptions()
+		topicSummary  = make(map[string]int)
 	)
 	log.Infof("listing all topics")
 
@@ -142,14 +138,20 @@ func (s *PubSubServer) ListTopics(conn *websocket.Conn) {
 	defer s.RUnlock()
 
 	if len(subscriptions.Items) < 1 {
-		s.SendMessage(conn, "server has no topics, create one!", 1)
+		sendMessage(conn, "server has no topics, create one!", 1)
 		return
 	}
 
 	for topic, subscribers := range subscriptions.Items {
-		msg := fmt.Sprintf("topic %v has %v subscribers", topic, len(subscribers.Items))
-		s.SendMessage(conn, msg, 1)
+		topicSummary[topic] = len(subscribers.Items)
 	}
+
+	j, err := json.Marshal(topicSummary)
+	if err != nil {
+		log.Errorf("failed to marshal payload: %v", err)
+	}
+
+	sendMessage(conn, string(j), 1)
 }
 
 // Unsubscribe a client from all topics
@@ -201,7 +203,7 @@ func (s *PubSubServer) PublishMessage(topic string, message []byte, msgType int)
 
 	if subscribers, ok := subscriptions.Items[topic]; ok {
 		for _, conn := range subscribers.Items {
-			s.SendMessage(conn, string(message), msgType)
+			sendMessage(conn, string(message), msgType)
 		}
 	} else {
 		// otherwise create the new topic but don't subscribe to it
@@ -229,4 +231,8 @@ func (s *PubSubServer) Subscribe(clientID, topic string, conn *websocket.Conn) {
 			},
 		}
 	}
+}
+
+func sendMessage(c *websocket.Conn, message string, msgType int) {
+	c.WriteMessage(msgType, []byte(message))
 }
