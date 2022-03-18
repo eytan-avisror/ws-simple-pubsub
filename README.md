@@ -21,7 +21,7 @@ $ ./bin/ws-simple-pubsub
 INFO[0000] starting server on localhost:8080
 ```
 
-From a websocket client, connect to the websocket endpoint at /ws and submit the below payloads.
+From a websocket client, connect to the websocket endpoint at `/ws` and submit the below payloads.
 
 ### Subscribe to topic
 
